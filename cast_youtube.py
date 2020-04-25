@@ -3,15 +3,15 @@ Example on how to use the YouTube Controller
 
 """
 
-import argparse
-import logging
 import sys
 
 import pychromecast
 from pychromecast.controllers.youtube import YouTubeController
 
 def castYoutube(cast_name, video_id):
+    # Note: only compatible with ChromeCast devices
     print('Casting http://youtube.com/watch?v=' + video_id + ' to ' + cast_name)
+
     chromecasts = pychromecast.get_listed_chromecasts(friendly_names=[cast_name])
     if not chromecasts:
         print('No chromecast with name "{}" discovered'.format(cast_name))

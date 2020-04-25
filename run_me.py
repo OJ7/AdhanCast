@@ -7,9 +7,10 @@ import sched, time
 import urllib.parse
 from urllib.request import Request, urlopen
 from cast_youtube import castYoutube
+from cast_media import castMedia
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from global_vars import city, country, calculation_method, cast_device_name, adhan_youtube_video_id, fajr_adhan_youtube_video_id
+from global_vars import city, country, calculation_method, cast_device_name, adhan_mp3, fajr_adhan_mp3, adhan_youtube_video_id, fajr_adhan_youtube_video_id
 
 SCAN_INTERVAL = 1 * 60 * 60 # number of seconds between updates (i.e. 1 hour)
 
@@ -47,11 +48,15 @@ def hasPrayerTimePassed(prayerTimeStr):
     return now > prayerTime
 
 def scheduleAdhan(prayerTimeStr, isFajr):
-    videoId = fajr_adhan_youtube_video_id if isFajr else adhan_youtube_video_id
     schedDate = datetime.now().date()
     schedTime = timeCopy(getHoursFromStr(prayerTimeStr), getMinutesFromStr(prayerTimeStr))
     scheduledTime = datetime.combine(schedDate, schedTime)
-    return scheduler.add_job(castYoutube, 'date', run_date=scheduledTime, args=[cast_device_name, videoId])
+    adhan_url = fajr_adhan_mp3 if isFajr else adhan_mp3
+    return scheduler.add_job(castMedia, 'date', run_date=scheduledTime, args=[cast_device_name, adhan_url])
+
+    # NOTE: Casting from YouTube only works for ChromeCast devices (not smart speakers like Google Home)
+    # videoId = fajr_adhan_youtube_video_id if isFajr else adhan_youtube_video_id
+    # return scheduler.add_job(castYoutube, 'date', run_date=scheduledTime, args=[cast_device_name, videoId])
 
 def scheduleAdhanCastForToday():
     if scheduler.running:
