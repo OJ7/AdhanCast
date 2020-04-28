@@ -8,6 +8,7 @@ import urllib.parse
 from urllib.request import Request, urlopen
 from cast_youtube import castYoutube
 from cast_media import castMedia
+import vlc
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from global_vars import city, country, calculation_method, cast_device_name, adhan_mp3, fajr_adhan_mp3, adhan_youtube_video_id, fajr_adhan_youtube_video_id
@@ -21,6 +22,10 @@ dhuhr = None
 asr = None
 maghrib = None
 isha = None
+
+# Used to play Adhan on local device
+regAdhanPlayer = vlc.MediaPlayer(adhan_mp3)
+fajrAdhanPlayer = vlc.MediaPlayer(fajr_adhan_mp3)
 
 lastUpdated = None
 
@@ -51,8 +56,8 @@ def scheduleAdhan(prayerTimeStr, isFajr):
     schedDate = datetime.now().date()
     schedTime = timeCopy(getHoursFromStr(prayerTimeStr), getMinutesFromStr(prayerTimeStr))
     scheduledTime = datetime.combine(schedDate, schedTime)
-    adhan_url = fajr_adhan_mp3 if isFajr else adhan_mp3
-    return scheduler.add_job(castMedia, 'date', run_date=scheduledTime, args=[cast_device_name, adhan_url])
+    adhanPlayer = fajrAdhanPlayer if isFajr else regAdhanPlayer
+    return scheduler.add_job(adhanPlayer.play, 'date', run_date=scheduledTime, args=[])
 
     # NOTE: Casting from YouTube only works for ChromeCast devices (not smart speakers like Google Home)
     # videoId = fajr_adhan_youtube_video_id if isFajr else adhan_youtube_video_id
